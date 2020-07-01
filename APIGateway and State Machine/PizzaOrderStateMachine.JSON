@@ -1,0 +1,58 @@
+{
+  "Comment": "Food Order Workflow using a choice state.",
+  "StartAt": "PlaceOrder",
+  
+  "States": {
+    "PlaceOrder": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-2:881883455662:function:PlaceOrder",
+      "Next": "ProcessPayment"
+    },
+    "ProcessPayment": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-2:881883455662:function:ProcessPayment",
+      "Next": "IsPaymentSuccessful"
+    },
+    "IsPaymentSuccessful": {
+      "Type" : "Choice",
+      "Choices": [
+        {
+          "Variable": "$.paymentSuccess",
+          "BooleanEquals": true,
+          "Next": "ConfirmOrder"
+        },
+        {
+          "Variable": "$.paymentSuccess",
+          "BooleanEquals": false,
+          "Next": "CancelOrder"
+        }
+      ]
+     
+    },
+
+    "ConfirmOrder": {
+      "Type" : "Task",
+      "Resource": "arn:aws:lambda:us-west-2:881883455662:function:ConfirmOrder",
+      "Next": "NotifyUser"
+    },
+
+    "CancelOrder": {
+      "Type" : "Task",
+      "Resource": "arn:aws:lambda:us-west-2:881883455662:function:CancelOrder",
+      "Next": "NotifyUser"
+    },
+
+   
+    "NotifyUser": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-2:881883455662:function:NotifyUser",
+      "Next": "NotifyWithPolly"
+    },
+    
+    "NotifyWithPolly": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-2:881883455662:function:ConvertOrderStatusToSpeech",
+      "End": true
+    }
+  }
+}
